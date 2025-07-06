@@ -16,12 +16,15 @@ app = FastAPI()
 async def writing_response(message: dict[str, str]):
     client = AsyncClient()
 
-    async for part in await client.chat(model=MODEL,
+    async for chunk in await client.chat(model=MODEL,
                                         messages=[message],
                                         # keep_alive=True,
                                         stream=True,
                                         think=False):
-        yield part.message.content
+        yield json.dumps({
+            "content": chunk.message.content,
+            "done": chunk.done
+        })
 
 @app.post("/")
 async def index(message: UserMessageModel):
